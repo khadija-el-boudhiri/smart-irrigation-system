@@ -1,4 +1,6 @@
 [core]
-    remote = local_storage
+    remote = dagshub
 ['remote "local_storage"']
     url = ../dvc_storage
+['remote "dagshub"']
+    url = https://dagshub.com/nrhi
