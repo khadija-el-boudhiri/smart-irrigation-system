@@ -1,0 +1,65 @@
+import mlflow
+import mlflow.sklearn
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+
+from src.data_loader import load_data
+from src.preprocess import preprocess_data
+from src.evaluate import evaluate_model
+
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_experiment("Smart Irrigation Multi Models")
+
+DATA_PATH = "features_ready.csv"
+TARGET_COLUMN = "status"
+
+data = load_data(DATA_PATH)
+X_train, X_test, y_train, y_test, scaler = preprocess_data(data, TARGET_COLUMN)
+
+models = {
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "Random Forest": RandomForestClassifier(
+        n_estimators=200,
+        max_depth=10,
+        random_state=42
+    ),
+    "XGBoost": XGBClassifier(
+        n_estimators=200,
+        learning_rate=0.05,
+        max_depth=5,
+        random_state=42,
+        eval_metric="logloss"
+    )
+}
+
+best_accuracy = 0
+best_model_name = None
+
+for name, model in models.items():
+    with mlflow.start_run(run_name=name):
+        model.fit(X_train, y_train)
+
+        accuracy, f1, matrix, report = evaluate_model(model, X_test, y_test)
+
+        mlflow.log_param("model_name", name)
+        mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("f1_score", f1)
+
+        mlflow.sklearn.log_model(model, "model")
+
+        print("Model:", name)
+        print("Accuracy:", accuracy)
+        print("F1-score:", f1)
+        print("Confusion Matrix:")
+        print(matrix)
+        print(report)
+        print("------------------------")
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_model_name = name
+
+print("Best model:", best_model_name)
+print("Best accuracy:", best_accuracy)
