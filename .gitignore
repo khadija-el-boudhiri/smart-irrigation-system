@@ -2,6 +2,9 @@ __pycache__/
 *.pyc
 .env
 venv/
-data/raw/*
-data/processed/*
+!/data/raw/*.dvc
+!/data/processed/*.dvc
+!/data/.gitignore
+!/data/raw/.gitignore
+!/data/processed/.gitignore
 .ipynb_checkpoints
