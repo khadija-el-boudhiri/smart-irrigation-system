@@ -6,5 +6,8 @@ venv/
 !/data/processed/*.dvc
 !/data/.gitignore
 !/data/raw/.gitignore
-!/data/processed/.gitignore
+data/processed/features.csv
+data/processed/features_ready.csv
 .ipynb_checkpoints
+mlruns/
+mlflow.db

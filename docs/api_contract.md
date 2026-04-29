@@ -24,16 +24,18 @@ POST /predict
 
 ### Request Body (JSON)
 {
-  "soil_moisture": float,
+  "soil_pct": float,
   "temperature": float,
-  "humidity": float
+  "pressure": float,
+  "altitude": float
 }
 
 ### Example Request
 {
-  "soil_moisture": 35,
-  "temperature": 28,
-  "humidity": 60
+  "soil_pct": 35.2,
+  "temperature": 28.0,
+  "pressure": 9984.5,
+  "altitude": 12.1
 }
 
 ---
@@ -41,13 +43,7 @@ POST /predict
 ## Response (Success)
 
 {
-  "decision": "IRRIGATE"
-}
-
-OR
-
-{
-  "decision": "DO_NOT_IRRIGATE"
+  "needs_irrigation": true
 }
 
 ---
@@ -61,7 +57,7 @@ OR
 
 ### Model not available
 {
-  "error": "Model not available"
+  "error": "Model is not loaded yet"
 }
 
 ---
@@ -69,5 +65,5 @@ OR
 ## Rules
 
 - All inputs must be numeric
-- soil_moisture must be between 0 and 100
+- soil_pct should be between 0 and 100
 - API must respond in JSON format

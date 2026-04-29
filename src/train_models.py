@@ -1,21 +1,26 @@
 import mlflow
 import mlflow.sklearn
+import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
-from src.data_loader import load_data
-from src.preprocess import preprocess_data
-from src.evaluate import evaluate_model
+try:
+    from src.preprocess import preprocess_data
+    from src.evaluate import evaluate_model
+    from src.schema import EXPERIMENT_NAME, MODEL_FEATURES, TARGET_COLUMN
+except ModuleNotFoundError:
+    from preprocess import preprocess_data
+    from evaluate import evaluate_model
+    from schema import EXPERIMENT_NAME, MODEL_FEATURES, TARGET_COLUMN
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
-mlflow.set_experiment("Smart Irrigation Multi Models")
+mlflow.set_experiment(EXPERIMENT_NAME)
 
-DATA_PATH = "features_ready.csv"
-TARGET_COLUMN = "status"
+DATA_PATH = "data/processed/features_ready.csv"
 
-data = load_data(DATA_PATH)
+data = pd.read_csv(DATA_PATH)
 X_train, X_test, y_train, y_test, scaler = preprocess_data(data, TARGET_COLUMN)
 
 models = {
@@ -44,6 +49,7 @@ for name, model in models.items():
         accuracy, f1, matrix, report = evaluate_model(model, X_test, y_test)
 
         mlflow.log_param("model_name", name)
+        mlflow.log_param("features", ",".join(MODEL_FEATURES))
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", f1)
 
