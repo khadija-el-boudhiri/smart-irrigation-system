@@ -16,7 +16,7 @@ celery==5.6.3
 certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
-click==8.3.3
+click==8.2.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
@@ -67,9 +67,8 @@ prompt_toolkit==3.0.52
 propcache==0.4.1
 psutil==7.2.2
 pycparser==3.0
-pydantic==2.13.3
+pydantic==2.12.5
 pydantic-settings==2.14.0
-pydantic_core==2.46.3
 pydot==4.0.1
 protobuf==6.33.6
 pygit2==1.19.2
@@ -111,4 +110,3 @@ Werkzeug==3.1.8
 yarl==1.23.0
 zc.lockfile==4.0
 zenml
-mlflow
