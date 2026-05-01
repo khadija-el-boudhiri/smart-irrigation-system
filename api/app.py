@@ -45,6 +45,7 @@ class SensorData(BaseModel):
 
 model = mlflow.pyfunc.load_model("models:/PlantWaterModel/Production")
 
+
 @app.post("/predict")
 def predict(data: SensorData):
     features = [[data.hum_sol, data.lux, data.temp, data.hum_air]]

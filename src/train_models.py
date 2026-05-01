@@ -1,16 +1,16 @@
 import mlflow
 import mlflow.sklearn
+from src.data_loader import load_data
+from src.mlflow_config import configure_mlflow
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
-from src.data_loader import load_data
 from src.preprocess import preprocess_data
 from src.evaluate import evaluate_model
 
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
-mlflow.set_experiment("Smart Irrigation Multi Models")
+configure_mlflow()
 
 DATA_PATH = "features_ready.csv"
 TARGET_COLUMN = "status"

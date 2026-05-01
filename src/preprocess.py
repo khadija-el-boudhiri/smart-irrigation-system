@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-df = pd.read_csv("data/processed/features.csv")
+df = pd.read_csv("features.csv")
 
 # 1. Encoder la colonne 'class' (texte → chiffre)
 # Very Dry=0, Dry=1, Wet=2, Very Wet=3
@@ -23,5 +23,5 @@ print(f"\n✅ Shape final : {df.shape}")
 print(f"Distribution target 'status' :\n{df['status'].value_counts()}")
 
 # 5. Sauvegarder
-df.to_csv("data/processed/features_ready.csv", index=False)
+df.to_csv("features_ready.csv", index=False)
 print("\n✅ features_ready.csv sauvegardé !")
