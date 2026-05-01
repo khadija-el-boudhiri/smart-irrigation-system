@@ -2,7 +2,14 @@ __pycache__/
 *.pyc
 .env
 venv/
-data/raw/*
-data/processed/*
+!/data/raw/*.dvc
+!/data/processed/*.dvc
+data/processed/features.csv
+data/processed/features_ready.csv
+data/processed/features_spark.csv
 .ipynb_checkpoints
+mlruns/
+mlflow.db
+metastore_db/
+spark-warehouse/
 .zen/

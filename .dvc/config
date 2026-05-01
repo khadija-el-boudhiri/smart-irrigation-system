@@ -3,4 +3,4 @@
 ['remote "local_storage"']
     url = ../dvc_storage
 ['remote "dagshub"']
-    url = https://dagshub.com/nrhi
+    url = https://dagshub.com/NOUAMAN-biba/irrigation_dataset.dvc

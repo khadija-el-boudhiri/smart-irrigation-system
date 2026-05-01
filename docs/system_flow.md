@@ -38,14 +38,14 @@ This system automates irrigation decisions using IoT data and machine learning.
 
 ### Step 4 — API Prediction (DevOps)
 - API receives input:
-  - soil_moisture
+  - soil_pct
   - temperature
-  - humidity
+  - pressure
+  - altitude
 
 - API loads model
 - API returns:
-  - IRRIGATE
-  - DO_NOT_IRRIGATE
+  - needs_irrigation = true/false
 
 ---
 
