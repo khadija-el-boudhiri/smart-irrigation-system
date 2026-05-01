@@ -85,6 +85,7 @@ rich==15.0.0
 ruamel.yaml==0.19.1
 scikit-learn
 mlflow==3.11.1
+pyspark==3.5.5
 xgboost
 scmrepo==3.6.2
 semver==3.0.4
