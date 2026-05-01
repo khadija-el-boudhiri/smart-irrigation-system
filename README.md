@@ -5,8 +5,8 @@ College MLOps project for predicting if irrigation is needed based on sensor val
 ## Quick file map
 
 - `src/schema.py`: shared names used across the project (features, target, experiment/model names).
-- `src/preprocess.py`: checks dataset columns, splits train/test, and scales features.
-- `src/train_models.py`: trains Logistic Regression, Random Forest, and XGBoost, then logs results in MLflow.
+- `src/preprocess.py`: checks dataset columns and splits train/test (raw features).
+- `src/train_models.py`: wraps each model in a scaler + classifier pipeline, trains, evaluates, logs to MLflow (so the API gets the same preprocessing as training).
 - `src/evaluate.py`: helper metrics (accuracy, f1, confusion matrix, report).
 - `src/promote_model.py`: picks best MLflow run and assigns alias (`staging` or `production`).
 - `api/app.py`: Flask API for prediction.

@@ -4,8 +4,6 @@ __pycache__/
 venv/
 !/data/raw/*.dvc
 !/data/processed/*.dvc
-!/data/.gitignore
-!/data/raw/.gitignore
 data/processed/features.csv
 data/processed/features_ready.csv
 .ipynb_checkpoints
