@@ -5,12 +5,14 @@ from mlflow import MlflowClient
 
 try:
     from src.schema import EXPERIMENT_NAME, REGISTERED_MODEL_NAME
+    from src.mlflow_config import get_tracking_uri
 except ModuleNotFoundError:
     from schema import EXPERIMENT_NAME, REGISTERED_MODEL_NAME
+    from mlflow_config import get_tracking_uri
 
 
 def promote_best_model(target_alias: str = "production") -> str:
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    mlflow.set_tracking_uri(get_tracking_uri())
     client = MlflowClient()
 
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)

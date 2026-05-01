@@ -12,3 +12,4 @@ mlruns/
 mlflow.db
 metastore_db/
 spark-warehouse/
+.zen/

@@ -14,12 +14,14 @@ try:
     from src.preprocess import preprocess_data
     from src.evaluate import evaluate_model
     from src.schema import EXPERIMENT_NAME, MODEL_FEATURES, TARGET_COLUMN
+    from src.mlflow_config import get_tracking_uri
 except ModuleNotFoundError:
     from preprocess import preprocess_data
     from evaluate import evaluate_model
     from schema import EXPERIMENT_NAME, MODEL_FEATURES, TARGET_COLUMN
+    from mlflow_config import get_tracking_uri
 
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_tracking_uri(get_tracking_uri())
 mlflow.set_experiment(EXPERIMENT_NAME)
 
 DATA_PATH = os.environ.get(
