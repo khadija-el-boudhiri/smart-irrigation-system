@@ -1,3 +1,5 @@
+import os
+
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -20,7 +22,9 @@ except ModuleNotFoundError:
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment(EXPERIMENT_NAME)
 
-DATA_PATH = "data/processed/features_ready.csv"
+DATA_PATH = os.environ.get(
+    "TRAIN_DATA_PATH", "data/processed/features_ready.csv"
+)
 
 data = pd.read_csv(DATA_PATH)
 X_train, X_test, y_train, y_test = preprocess_data(data, TARGET_COLUMN)

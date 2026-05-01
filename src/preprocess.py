@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -37,7 +39,10 @@ def preprocess_data(df: pd.DataFrame, target_column: str = TARGET_COLUMN):
 
 
 if __name__ == "__main__":
-    df = load_ready_dataset()
+    path = os.environ.get(
+        "TRAIN_DATA_PATH", "data/processed/features_ready.csv"
+    )
+    df = load_ready_dataset(path)
     validate_schema(df)
     print("Dataset loaded and validated.")
     print(f"Rows: {len(df)}")
