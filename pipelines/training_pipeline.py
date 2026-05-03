@@ -24,3 +24,4 @@ def training_pipeline(
         metrics=metrics,
         registered_model_name=registered_model_name,
     )
+
