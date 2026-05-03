@@ -21,7 +21,7 @@ def promote_best_model(target_alias: str = "production") -> str:
 
     runs = mlflow.search_runs(
         experiment_ids=[experiment.experiment_id],
-        order_by=["metrics.accuracy DESC"],
+        order_by=["metrics.selection_score DESC"],
         max_results=1,
     )
     if runs.empty:
