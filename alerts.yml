@@ -1,0 +1,36 @@
+groups:
+  - name: smart_irrigation_alerts
+    rules:
+
+      - alert: ModelLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="fastapi", handler="/predict"}[5m])) by (le)
+          ) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prediction latency p95 is above 500ms"
+          description: "The p95 latency for /predict has been above 500ms for more than 2 minutes. Current value: {{ $value | humanizeDuration }}"
+
+      - alert: APIErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="fastapi", status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total{job="fastapi"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "FastAPI 5xx error rate above 5%"
+          description: "HTTP 5xx error rate has been above 5% for 5 minutes. Current rate: {{ $value | humanizePercentage }}"
+
+      - alert: MLflowDown
+        expr: up{job="mlflow"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MLflow tracking server is down"
+          description: "The MLflow target has been unreachable for more than 1 minute."
