@@ -33,9 +33,35 @@ From the project root:
 5. `python src/promote_model.py --target production`
 6. `python api/app.py`
 
+## Run with ZenML pipeline
+
+From the project root:
+
+1. `pip install -r requirements.txt`
+2. `python run_pipeline.py`
+3. Run the FastAPI app:
+   - `python api/fastapi_app.py`
+   - or `python -m uvicorn api.fastapi_app:app --host 0.0.0.0 --port 8000`
+
 Test request:
 
 `curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"`
+
+FastAPI equivalent (port 8000):
+
+`curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"`
+
+FastAPI interactive docs:
+
+`http://127.0.0.1:8000/docs`
+
+## Run with Docker Compose
+
+From the project root:
+
+1. `cp .env.example .env`
+2. Fill in the values in `.env`
+3. `docker compose up --build`
 
 ## Data note
 
