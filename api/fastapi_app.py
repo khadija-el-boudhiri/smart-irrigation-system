@@ -7,6 +7,7 @@ import mlflow.pyfunc
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 try:
@@ -16,6 +17,7 @@ except ModuleNotFoundError:
     from src.schema import MODEL_FEATURES, REGISTERED_MODEL_NAME
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 model = None
 
 
