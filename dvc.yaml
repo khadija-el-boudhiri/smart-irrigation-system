@@ -1,0 +1,15 @@
+stages:
+  validate:
+    cmd: python src/preprocess.py
+    deps:
+      - src/preprocess.py
+      - src/schema.py
+      - data/processed/features_ready.csv
+
+  etl:
+    cmd: python src/spark_etl.py --input data/processed/features_ready.csv --output data/processed/features_ready.csv
+    deps:
+      - src/spark_etl.py
+      - src/schema.py
+    outs:
+      - data/processed/features_ready.csv

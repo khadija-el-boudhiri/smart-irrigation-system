@@ -41,4 +41,4 @@ Test request:
 
 - Default training file: `data/processed/features_ready.csv` (override with `TRAIN_DATA_PATH`).
 - Spark output example: `data/processed/features_spark.csv` (gitignored; regenerate locally).
-- DVC pointer used: `data/processed/features_ready.csv.dvc`
+- DVC: pipeline in `dvc.yaml` (`etl` writes `data/processed/features_ready.csv`, then `validate` runs `python src/preprocess.py`). Run `dvc repro --dry` or `dvc repro` after JDK 11+ is installed for Spark ETL.
