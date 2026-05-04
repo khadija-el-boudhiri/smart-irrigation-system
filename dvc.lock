@@ -1,0 +1,19 @@
+schema: '2.0'
+stages:
+  etl:
+    cmd: python src/spark_etl.py --input data/processed/features_ready.csv 
+      --output data/processed/features_ready.csv
+    deps:
+    - path: src/schema.py
+      hash: md5
+      md5: ef53826cdeb21253f165263dc47aad86
+      size: 192
+    - path: src/spark_etl.py
+      hash: md5
+      md5: 7efd7fd622d1650399f1292e30fdf8e5
+      size: 2903
+    outs:
+    - path: data/processed/features_ready.csv
+      hash: md5
+      md5: 8dd585cc507e9cd342952a1c19782fb1
+      size: 574933
