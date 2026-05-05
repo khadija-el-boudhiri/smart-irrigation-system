@@ -13,3 +13,13 @@ mlflow.db
 metastore_db/
 spark-warehouse/
 .zen/
+
+# Added by user request
+*.db
+*.pkl
+*.joblib
+*.csv
+data/processed/
+mlartifacts/
+.venv/
+.pytest_cache/

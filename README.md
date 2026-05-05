@@ -1,90 +1,96 @@
-# Smart Irrigation System
+# Smart Irrigation MLOps
+An end-to-end Machine Learning pipeline and API for smart irrigation predictions.
 
-College MLOps project for predicting if irrigation is needed based on sensor values.
+## Project Overview
+This project provides a robust MLOps pipeline for a smart irrigation system, utilizing machine learning to predict whether irrigation is needed based on environmental factors. It integrates data versioning, model tracking, and containerized deployment to ensure reproducible and reliable predictions. A comprehensive monitoring stack oversees API performance and model health in production.
 
-## Quick file map
+## Architecture
 
-- `src/schema.py`: shared names used across the project (features, target, experiment/model names).
-- `src/preprocess.py`: checks dataset columns and splits train/test (raw features).
-- `src/train_models.py`: wraps each model in a scaler + classifier pipeline, trains, evaluates, logs to MLflow (so the API gets the same preprocessing as training).
-- `src/evaluate.py`: helper metrics (accuracy, f1, confusion matrix, report).
-- `src/promote_model.py`: picks best MLflow run and assigns alias (`staging` or `production`).
-- `src/spark_etl.py`: optional Spark batch job (read CSV/glob, validate schema, drop bad rows, write one CSV for training).
-- `api/app.py`: Flask API for prediction.
-- `api/fastapi_app.py`: FastAPI alternative to Flask with Prometheus metrics and health checks.
-- `pipelines/training_pipeline.py`: ZenML pipeline definition with steps (load, train, promote).
-- `steps/`: ZenML step implementations (load_data, train, evaluate, promote).
-- `run_pipeline.py`: entry point for running the ZenML pipeline with MLflow tracker configuration.
-
-## Who handles what
-
-- DataOps: dataset quality + schema checks (`src/preprocess.py`, optional `src/spark_etl.py`)
-- MLOps: training, evaluation, promotion (`src/train_models.py`, `src/evaluate.py`, `src/promote_model.py`)
-- DevOps: API runtime + deployment (`api/app.py` for Flask or `api/fastapi_app.py` for FastAPI with metrics)
-- MLOps Orchestration: ZenML pipeline execution (`run_pipeline.py`, `pipelines/`, `steps/`)
-
-## Run order
-
-### Manual Training + Flask API (no ZenML)
-
-From the project root:
-
-1. `pip install -r requirements.txt`
-2. (Optional Spark ETL, e.g. more or new CSV files) Install a **JDK 11+** (e.g. Eclipse Temurin), set **JAVA_HOME**, then:  
-   `python src/spark_etl.py --input "data/raw/*.csv" --output data/processed/features_spark.csv`  
-   Then train on that file:  
-   `set TRAIN_DATA_PATH=data/processed/features_spark.csv` (Windows) or `export TRAIN_DATA_PATH=...` (Linux/macOS)  
-   before training (step 4).
-3. `python src/preprocess.py` (sanity check on whatever `TRAIN_DATA_PATH` points to, default is `features_ready.csv`)
-4. `python src/train_models.py`
-5. `python src/promote_model.py --target production`
-6. `python api/app.py` (Flask API on port 5000)
-
-### ZenML Pipeline + FastAPI (Recommended)
-
-See section "Run with ZenML pipeline" above.
-
-## Run with ZenML pipeline
-
-From the project root:
-
-1. `pip install -r requirements.txt`
-2. `python run_pipeline.py`
-3. Run the FastAPI app:
-   - `python api/fastapi_app.py`
-   - or `python -m uvicorn api.fastapi_app:app --host 0.0.0.0 --port 8000`
-
-### Available Endpoints (FastAPI - port 8000)
-
-- `GET /` - Home/status endpoint
-- `GET /health` - Health check
-- `GET /ui` - UI endpoint (returns `api/index.html` if available, else 503 error)
-- `POST /predict` - Make predictions (requires: soil_pct, temperature, pressure, altitude)
-- `GET /metrics` - Prometheus metrics
-- `GET /docs` - Interactive API documentation (Swagger UI)
-
-### Test Prediction Request
-
-```bash
-curl -X POST http://127.0.0.1:8000/predict \
-  -H "Content-Type: application/json" \
-  -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"
+```text
+    [Data] ──> [DVC] ──> [Training] ──> [MLflow] ──> [API] ──> [Client]
+                               |                       |
+                               v                       v
+                         [Prometheus] <──────── [Grafana]
 ```
 
-### Interactive API Documentation
+## Quick Start
+To set up the project locally, open a Windows CMD prompt and run the following commands:
+```cmd
+python -m venv .venv
+call .venv\Scripts\activate.bat
+pip install -r requirements.txt
+docker-compose up -d
+```
 
-Open in browser: `http://127.0.0.1:8000/docs`
+## API Reference
 
-## Run with Docker Compose
+The API runs on port 5000 via Flask.
 
-From the project root:
+| Method | Endpoint | Description | Example Request | Example Response |
+|--------|----------|-------------|-----------------|------------------|
+| GET | `/` | API root | N/A | `{"message": "Smart Irrigation API is running"}` |
+| GET | `/health` | Health check | N/A | `{"status": "ok"}` |
+| POST | `/predict` | Predict irrigation need | `{"soil_pct": 35.2, "temperature": 28.0, "pressure": 9984.5, "altitude": 12.1}` | `{"needs_irrigation": true}` |
 
-1. `cp .env.example .env`
-2. Fill in the values in `.env`
-3. `docker compose up --build`
+**Input Validation Requirements:**
+- `soil_pct`: 0 - 100
+- `temperature`: 10 - 42
+- `pressure`: 9780 - 10120
+- `altitude`: 0 - 500
 
-## Data note
+## ML Pipeline
+Three models were evaluated during training: Logistic Regression (best, CV F1=0.848), Random Forest, and XGBoost. Data is tracked with DVC (`data/processed/features_ready.csv`) and model tracking is handled via MLflow (`sqlite:///mlflow.db`). The best model is registered as `PlantWaterModel` with the alias `production`.
 
-- Default training file: `data/processed/features_ready.csv` (override with `TRAIN_DATA_PATH`).
-- Spark output example: `data/processed/features_spark.csv` (gitignored; regenerate locally).
-- DVC: pipeline in `dvc.yaml` (`etl` writes `data/processed/features_ready.csv`, then `validate` runs `python src/preprocess.py`). Run `dvc repro --dry` or `dvc repro` after JDK 11+ is installed for Spark ETL.
+To retrain and promote a new model, use the following commands:
+```cmd
+dvc pull
+python src/train.py
+```
+*(After training, the best model can be promoted to the "production" alias in the MLflow UI or via your deployment scripts).*
+
+## Monitoring
+The infrastructure includes Prometheus and Grafana for system and model monitoring (including node-exporter).
+- **Grafana**: Accessible at `http://localhost:3000`. Features the "Smart Irrigation MLOps Overview" dashboard.
+- **Prometheus**: Accessible at `http://localhost:9090`. Configured with alert rules for `ModelLatencyHigh`, `APIErrorRate`, and `MLflowDown`.
+
+## CI/CD
+The project uses a Jenkins pipeline with 8 stages:
+1. **Checkout**: Pulls the latest code from the repository.
+2. **Lint & test**: Runs code quality checks and unit tests.
+3. **DVC pull**: Retrieves the latest tracked data.
+4. **Train**: Trains the models and logs metrics to MLflow.
+5. **Evaluate**: Evaluates the model performance.
+6. **Build Docker image**: Containerizes the application.
+7. **Deploy**: Deploys the services.
+8. **Post**: Performs post-deployment steps.
+
+**Pipeline Parameters:**
+- `DEPLOY_ENV` (staging/production)
+- `SKIP_TRAIN` (boolean)
+
+**Required Credentials:**
+- `DVC_ACCESS_KEY`
+- `DOCKER_REGISTRY_CREDENTIALS`
+- `SLACK_WEBHOOK`
+
+## Project Structure
+```text
+smart-irrigation-system/
+├── api/
+│   └── app.py
+├── data/
+│   └── processed/
+├── docker-compose.yml
+├── Jenkinsfile
+├── pytest.ini
+├── README.md
+├── requirements.txt
+├── src/
+│   └── train.py
+└── tests/
+    ├── conftest.py
+    └── test_api.py
+```
+
+## License
+MIT

@@ -1,38 +1,32 @@
-import sys
-from pathlib import Path
-
 import pandas as pd
 import pytest
-
-# Project root so `import src.preprocess` works when pytest is run from repo root.
-_ROOT = Path(__file__).resolve().parent.parent
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
-
+from api.app import app
 
 @pytest.fixture
-def valid_irrigation_df() -> pd.DataFrame:
-    """
-    Ten rows with all MODEL_FEATURES and TARGET_COLUMN, values inside preprocess ranges.
-    Class balance 50/50 so preprocess_data can stratify the train/test split.
-    """
-    return pd.DataFrame(
-        {
-            "soil_pct": [25.0, 40.5, 55.0, 72.3, 88.0, 15.2, 33.7, 61.0, 49.1, 95.4],
-            "temperature": [18.0, 22.5, 28.0, 35.2, 12.1, 20.0, 30.0, 38.0, 15.5, 25.0],
-            "pressure": [
-                9900,
-                10050,
-                10100,
-                9850,
-                9980,
-                10000,
-                9790,
-                10115,
-                9920,
-                10020,
-            ],
-            "altitude": [50, 120, 0, 300, 450, 200, 80, 500, 10, 250],
-            "status": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-        }
-    )
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
+
+@pytest.fixture
+def valid_payload():
+    return {"soil_pct": 35.2, "temperature": 28.0, "pressure": 9984.5, "altitude": 12.1}
+
+@pytest.fixture
+def missing_field_payload():
+    return {"temperature": 28.0, "pressure": 9984.5, "altitude": 12.1}
+
+@pytest.fixture
+def out_of_range_payload():
+    return {"soil_pct": 999, "temperature": 28.0, "pressure": 9984.5, "altitude": 12.1}
+
+@pytest.fixture
+def valid_irrigation_df():
+    """Create a valid DataFrame with enough rows for stratified split."""
+    return pd.DataFrame({
+        'soil_pct': [35.2, 40.5, 28.3, 45.0, 32.0, 38.0, 42.0, 30.0, 48.0, 25.0],
+        'temperature': [28.0, 32.5, 25.0, 30.0, 27.0, 29.0, 31.0, 26.0, 33.0, 24.0],
+        'pressure': [9984.5, 10012.3, 9975.0, 9990.0, 10000.0, 9980.0, 10005.0, 9960.0, 10020.0, 9950.0],
+        'altitude': [12.1, 15.0, 10.5, 14.0, 11.0, 13.0, 16.0, 9.0, 17.0, 8.0],
+        'status': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # 5 of each class
+    })

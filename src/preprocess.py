@@ -3,16 +3,15 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-try:
-    from src.schema import MODEL_FEATURES, TARGET_COLUMN
-except ModuleNotFoundError:
-    from schema import MODEL_FEATURES, TARGET_COLUMN
+MODEL_FEATURES = ["soil_pct", "temperature", "pressure", "altitude"]
 
 
 def load_ready_dataset(path: str = "data/processed/features_ready.csv") -> pd.DataFrame:
     """DataOps: load the already prepared dataset from disk."""
     return pd.read_csv(path)
 
+
+TARGET_COLUMN = "status"
 
 def validate_schema(df: pd.DataFrame, target_column: str = TARGET_COLUMN) -> None:
     """MLOps: ensure required training columns are present."""
@@ -37,10 +36,8 @@ def validate_ranges(df: pd.DataFrame) -> pd.DataFrame:
     )
     df_clean = df.loc[in_range].copy()
     n_dropped = n_before - len(df_clean)
-    n_remain = len(df_clean)
-    print(
-        f"Dropped {n_dropped} row(s) out of range; {n_remain} row(s) remain."
-    )
+    if n_dropped > 0:
+        print(f"Dropped {n_dropped} rows with out-of-range values")
     return df_clean
 
 
