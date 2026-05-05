@@ -22,9 +22,8 @@ if not exist ".venv\Scripts\activate" (
 
 call .venv\Scripts\activate
 
-echo Verification des dependances...
-pip install -r requirements.txt --quiet
-pip install flask-cors --quiet
+echo Installation des dependances (1-2 minutes)...
+pip install -r requirements_api.txt --quiet
 
 set MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 set MLFLOW_MODEL_URI=runs:/05dbc64a0c2e4236bf2e2f8c82f61f04/model

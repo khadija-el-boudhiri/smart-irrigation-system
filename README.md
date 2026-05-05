@@ -8,7 +8,7 @@ pression atmosphérique et altitude.
 
 Le modèle de machine learning (Régression Logistique, F1=0.848) est
 entraîné sur des données réelles et exposé via une API web avec une
-interface utilisateur en français.
+interface utilisateur .
 
 ---
 
@@ -38,7 +38,7 @@ interface utilisateur en français.
 
 **DevOps — Khadija El Boudhiri**
 - Développement de l'API Flask (api/app.py)
-- Interface utilisateur web en français (api/index.html)
+- Interface utilisateur web  (api/index.html)
 - Containerisation Docker (Dockerfile.api, docker-compose.yml)
 - Pipeline CI/CD Jenkins (Jenkinsfile — 8 étapes)
 - Configuration du monitoring Prometheus + Grafana
@@ -56,22 +56,20 @@ interface utilisateur en français.
 ```cmd
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
-pip install flask-cors
+pip install -r requirements_api.txt
 ```
 
 3. Double-cliquez sur le fichier `start.bat`
 4. Ouvrez votre navigateur sur : **http://127.0.0.1:5000/ui**
 
-C'est tout. L'interface s'affiche en français.
+C'est tout. L'interface s'affiche.
 
 ### Option B — Terminal manuel
 
 ```cmd
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
-pip install flask-cors
+pip install -r requirements_api.txt
 set MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 set MLFLOW_MODEL_URI=runs:/05dbc64a0c2e4236bf2e2f8c82f61f04/model
 python api\app.py
@@ -110,7 +108,7 @@ PlantWaterModel@production
 [api/app.py] API Flask — port 5000
 │
 ▼
-[api/index.html] Interface web en français
+[api/index.html] Interface web 
 │
 ▼
 Utilisateur
@@ -165,7 +163,7 @@ Résultat attendu : **26 passed**
 smart-irrigation-system/
 ├── api/
 │   ├── app.py              ← API Flask principale
-│   └── index.html          ← Interface web en français
+│   └── index.html          ← Interface web 
 ├── src/
 │   ├── train_models.py     ← Entraînement des 3 modèles
 │   ├── promote_model.py    ← Enregistrement du meilleur modèle
@@ -190,7 +188,8 @@ smart-irrigation-system/
 ├── alerts.yml
 ├── dvc.yaml
 ├── .env.example
-├── requirements.txt
+├── requirements.txt        ← Dépendances complètes (ML, tests, dev)
+├── requirements_api.txt    ← Dépendances légères (API Flask)
 ├── pytest.ini
 ├── start.bat               ← Lancement en un double-clic
 └── README.md
@@ -203,7 +202,7 @@ smart-irrigation-system/
 |---------|----------|-------------|
 | GET | / | Statut de l'API |
 | GET | /health | Vérification santé |
-| GET | /ui | Interface web en français |
+| GET | /ui | Interface |
 | POST | /predict | Prédiction d'arrosage |
 
 Champs acceptés par POST /predict :
