@@ -1,96 +1,220 @@
-# Smart Irrigation MLOps
-An end-to-end Machine Learning pipeline and API for smart irrigation predictions.
+# Irrigation Intelligente — Système de prédiction d'arrosage
 
-## Project Overview
-This project provides a robust MLOps pipeline for a smart irrigation system, utilizing machine learning to predict whether irrigation is needed based on environmental factors. It integrates data versioning, model tracking, and containerized deployment to ensure reproducible and reliable predictions. A comprehensive monitoring stack oversees API performance and model health in production.
+## Description
 
-## Architecture
+Système intelligent qui prédit si une plante a besoin d'être arrosée
+en fonction de 4 mesures capteurs : humidité du sol, température,
+pression atmosphérique et altitude.
 
-```text
-    [Data] ──> [DVC] ──> [Training] ──> [MLflow] ──> [API] ──> [Client]
-                               |                       |
-                               v                       v
-                         [Prometheus] <──────── [Grafana]
-```
+Le modèle de machine learning (Régression Logistique, F1=0.848) est
+entraîné sur des données réelles et exposé via une API web avec une
+interface utilisateur en français.
 
-## Quick Start
-To set up the project locally, open a Windows CMD prompt and run the following commands:
+---
+
+## Démarrage rapide (Windows)
+
+### Option A — Double-clic (le plus simple)
+
+1. Décompressez le ZIP dans un dossier de votre choix
+2. Ouvrez un terminal CMD dans ce dossier et créez l'environnement :
 ```cmd
 python -m venv .venv
-call .venv\Scripts\activate.bat
+.venv\Scripts\activate
 pip install -r requirements.txt
-docker-compose up -d
+pip install flask-cors
 ```
 
-## API Reference
+3. Double-cliquez sur le fichier `start.bat`
+4. Ouvrez votre navigateur sur : **http://127.0.0.1:5000/ui**
 
-The API runs on port 5000 via Flask.
+C'est tout. L'interface s'affiche en français.
 
-| Method | Endpoint | Description | Example Request | Example Response |
-|--------|----------|-------------|-----------------|------------------|
-| GET | `/` | API root | N/A | `{"message": "Smart Irrigation API is running"}` |
-| GET | `/health` | Health check | N/A | `{"status": "ok"}` |
-| POST | `/predict` | Predict irrigation need | `{"soil_pct": 35.2, "temperature": 28.0, "pressure": 9984.5, "altitude": 12.1}` | `{"needs_irrigation": true}` |
-
-**Input Validation Requirements:**
-- `soil_pct`: 0 - 100
-- `temperature`: 10 - 42
-- `pressure`: 9780 - 10120
-- `altitude`: 0 - 500
-
-## ML Pipeline
-Three models were evaluated during training: Logistic Regression (best, CV F1=0.848), Random Forest, and XGBoost. Data is tracked with DVC (`data/processed/features_ready.csv`) and model tracking is handled via MLflow (`sqlite:///mlflow.db`). The best model is registered as `PlantWaterModel` with the alias `production`.
-
-To retrain and promote a new model, use the following commands:
+### Option B — Terminal manuel
 ```cmd
-dvc pull
-python src/train.py
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+pip install flask-cors
+set MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+set MLFLOW_MODEL_URI=runs:/05dbc64a0c2e4236bf2e2f8c82f61f04/model
+python api\app.py
 ```
-*(After training, the best model can be promoted to the "production" alias in the MLflow UI or via your deployment scripts).*
 
-## Monitoring
-The infrastructure includes Prometheus and Grafana for system and model monitoring (including node-exporter).
-- **Grafana**: Accessible at `http://localhost:3000`. Features the "Smart Irrigation MLOps Overview" dashboard.
-- **Prometheus**: Accessible at `http://localhost:9090`. Configured with alert rules for `ModelLatencyHigh`, `APIErrorRate`, and `MLflowDown`.
+Puis ouvrez : http://127.0.0.1:5000/ui
 
-## CI/CD
-The project uses a Jenkins pipeline with 8 stages:
-1. **Checkout**: Pulls the latest code from the repository.
-2. **Lint & test**: Runs code quality checks and unit tests.
-3. **DVC pull**: Retrieves the latest tracked data.
-4. **Train**: Trains the models and logs metrics to MLflow.
-5. **Evaluate**: Evaluates the model performance.
-6. **Build Docker image**: Containerizes the application.
-7. **Deploy**: Deploys the services.
-8. **Post**: Performs post-deployment steps.
+---
 
-**Pipeline Parameters:**
-- `DEPLOY_ENV` (staging/production)
-- `SKIP_TRAIN` (boolean)
+## Prérequis
 
-**Required Credentials:**
-- `DVC_ACCESS_KEY`
-- `DOCKER_REGISTRY_CREDENTIALS`
-- `SLACK_WEBHOOK`
+- Python 3.11 installé — https://www.python.org/downloads/
+- Connexion internet (pour installer les dépendances)
+- Windows 10 ou supérieur
 
-## Project Structure
+---
+
+## Utilisation de l'interface
+
+1. Réglez les 4 curseurs selon les mesures de votre capteur
+2. Cliquez sur **"Lancer l'analyse"**
+3. Le résultat s'affiche immédiatement :
+   - 🟠 **Arrosage nécessaire** — le sol est trop sec
+   - 🟢 **Pas d'arrosage nécessaire** — le sol est suffisamment humide
+4. L'historique des 6 dernières analyses s'affiche en bas
+
+---
+
+## Tester l'API manuellement
+
+Dans un second terminal (avec .venv activé) :
+
+Vérification santé :
+```bash
+curl http://127.0.0.1:5000/health
+```
+Réponse attendue : `{"status": "ok"}`
+
+Test prédiction :
+```bash
+curl -X POST http://127.0.0.1:5000/predict ^
+-H "Content-Type: application/json" ^
+-d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"
+```
+Réponse attendue : `{"needs_irrigation": true}` ou `{"needs_irrigation": false}`
+
+---
+
+## Lancer les tests automatisés
+```bash
+pip install pytest
+pytest tests/ -v
+```
+Résultat attendu : **26 passed**
+
+---
+
+## Structure du projet
 ```text
 smart-irrigation-system/
 ├── api/
-│   └── app.py
+│   ├── app.py              ← API Flask principale
+│   └── index.html          ← Interface web en français
+├── src/
+│   ├── train_models.py     ← Entraînement des 3 modèles
+│   ├── promote_model.py    ← Enregistrement du meilleur modèle
+│   ├── preprocess.py       ← Nettoyage des données
+│   ├── schema.py           ← Définition des champs
+│   ├── model_training.py   ← Pipelines sklearn
+│   └── mlflow_config.py    ← Configuration MLflow
+├── tests/
+│   ├── conftest.py
+│   ├── test_api.py
+│   ├── test_evaluate.py
+│   └── test_preprocess.py
 ├── data/
 │   └── processed/
+│       └── features_ready.csv
+├── grafana/
+│   └── provisioning/
+├── Dockerfile.api
 ├── docker-compose.yml
 ├── Jenkinsfile
-├── pytest.ini
-├── README.md
+├── prometheus.yml
+├── alerts.yml
+├── dvc.yaml
+├── .env.example
 ├── requirements.txt
-├── src/
-│   └── train.py
-└── tests/
-    ├── conftest.py
-    └── test_api.py
+├── pytest.ini
+├── start.bat               ← Lancement en un double-clic
+└── README.md
 ```
 
-## License
-MIT
+---
+
+## Référence API
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | / | Statut de l'API |
+| GET | /health | Vérification santé |
+| GET | /ui | Interface web en français |
+| POST | /predict | Prédiction d'arrosage |
+
+Champs acceptés par POST /predict :
+
+| Champ | Type | Min | Max | Unité |
+|-------|------|-----|-----|-------|
+| soil_pct | float | 0 | 100 | % |
+| temperature | float | 10 | 42 | °C |
+| pressure | float | 9780 | 10120 | hPa |
+| altitude | float | 0 | 500 | m |
+
+---
+
+## Modèle de machine learning
+
+- 3 modèles entraînés : Régression Logistique, Random Forest, XGBoost
+- Meilleur modèle : Régression Logistique (F1 = 0.848)
+- Enregistré dans MLflow sous le nom PlantWaterModel
+- Suivi des expériences via base SQLite locale (mlflow.db)
+
+Pour réentraîner depuis zéro (optionnel) :
+```bash
+python src/train_models.py
+python src/promote_model.py
+```
+
+---
+
+## CI/CD — Jenkins
+
+Le Jenkinsfile définit 8 étapes :
+
+| Étape | Description |
+|-------|-------------|
+| Checkout | Clonage du dépôt |
+| Lint & Test | flake8 + pytest |
+| DVC Pull | Récupération des données |
+| Train | Entraînement des modèles |
+| Evaluate | Promotion du meilleur modèle |
+| Build Docker Image | Construction et push de l'image |
+| Deploy | Déploiement via docker compose |
+| Post | Archivage + notification Slack |
+
+Credentials Jenkins requis : `DVC_ACCESS_KEY`, `DOCKER_REGISTRY_CREDENTIALS`, `SLACK_WEBHOOK`
+
+---
+
+## Monitoring (optionnel — nécessite Docker Desktop)
+```bash
+docker compose up -d
+```
+
+| Service | URL | Identifiants |
+|---------|-----|--------------|
+| Interface web | http://localhost:5000/ui | — |
+| Grafana | http://localhost:3000 | admin / admin123 |
+| Prometheus | http://localhost:9090 | — |
+| MLflow UI | http://localhost:5001 | — |
+
+---
+
+## Variables d'environnement
+
+Copiez `.env.example` vers `.env` et ajustez si nécessaire :
+```bash
+copy .env.example .env
+```
+
+| Variable | Valeur par défaut |
+|----------|-------------------|
+| MLFLOW_TRACKING_URI | sqlite:///mlflow.db |
+| MLFLOW_MODEL_URI | runs:/05dbc64a0c2e4236bf2e2f8c82f61f04/model |
+| MODEL_NAME | PlantWaterModel |
+| GF_SECURITY_ADMIN_PASSWORD | changeme_strong_password |
+
+---
+
+## Licence
+
+MIT — libre d'utilisation et de modification.

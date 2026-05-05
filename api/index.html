@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irrigation Intelligente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green-dark: #1a3a2a;
+            --green-mid: #2d5a3d;
+            --green-light: #4a8c5c;
+            --green-pale: #d4ead9;
+            --green-ghost: #f0f7f1;
+            --amber: #c8852a;
+            --amber-pale: #fdf3e3;
+            --red: #c0392b;
+            --red-pale: #fdecea;
+            --text: #1a2e1f;
+            --text-muted: #5a7a62;
+            --border: #cddfd1;
+            --bg: #f5f9f5;
+            --card: #ffffff;
+            
+            --font-sans: 'DM Mono', monospace;
+            --font-serif: 'Fraunces', serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            color: var(--green-mid);
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            color: var(--green-dark);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(26, 58, 42, 0.05);
+        }
+
+        .card-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--green-dark);
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--green-pale);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--green-dark);
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type=range] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: var(--green-pale);
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--green-mid);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            transition: transform 0.1s;
+        }
+        
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--green-mid);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background-color: var(--green-dark);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result Area */
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            min-height: 200px;
+            padding: 2rem;
+            border-radius: 12px;
+            background-color: var(--green-ghost);
+            transition: all 0.3s ease;
+        }
+        
+        .result-container.state-initial {
+            background-color: var(--bg);
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+        }
+
+        .result-container.state-irrigate {
+            background-color: var(--amber-pale);
+            border: 1px solid var(--amber);
+        }
+
+        .result-container.state-ok {
+            background-color: var(--green-pale);
+            border: 1px solid var(--green-light);
+        }
+
+        .result-container.state-error {
+            background-color: var(--red-pale);
+            border: 1px solid var(--red);
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+        }
+
+        .state-irrigate .result-icon { color: var(--amber); }
+        .state-ok .result-icon { color: var(--green-mid); }
+        .state-error .result-icon { color: var(--red); }
+        .state-initial .result-icon { color: var(--text-muted); }
+
+        .result-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .state-irrigate .result-title { color: var(--amber); }
+        .state-ok .result-title { color: var(--green-dark); }
+        .state-error .result-title { color: var(--red); }
+
+        .result-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .state-error .result-subtitle { color: var(--red); }
+
+        .summary-table {
+            width: 100%;
+            margin-top: 2rem;
+            border-collapse: collapse;
+            display: none;
+        }
+        
+        .summary-table.visible {
+            display: table;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .summary-table th {
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .summary-table td {
+            font-weight: 500;
+            text-align: right;
+            color: var(--green-dark);
+        }
+
+        /* History */
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .history-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .history-dot.irrigate { background-color: var(--amber); }
+        .history-dot.ok { background-color: var(--green-mid); }
+        .history-dot.error { background-color: var(--red); }
+
+        .history-content {
+            flex-grow: 1;
+        }
+
+        .history-summary {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .history-verdict {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--green-dark);
+        }
+
+        .history-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-left: 1rem;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #fff;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+        .loading .btn-text {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
+        </svg>
+        <h1>Irrigation Intelligente</h1>
+        <p class="subtitle">Système d'aide à l'arrosage</p>
+    </header>
+
+    <div class="main-grid">
+        <!-- Input Form -->
+        <div class="card">
+            <h2 class="card-title">Données du capteur</h2>
+            
+            <div class="form-group">
+                <div class="form-header">
+                    <span class="form-label">Humidité du sol</span>
+                    <span class="form-value" id="val-soil">35 %</span>
+                </div>
+                <div class="slider-wrapper">
+                    <input type="range" id="soil_pct" min="0" max="100" step="1" value="35">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-header">
+                    <span class="form-label">Température</span>
+                    <span class="form-value" id="val-temp">28 °C</span>
+                </div>
+                <div class="slider-wrapper">
+                    <input type="range" id="temperature" min="10" max="42" step="0.5" value="28">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-header">
+                    <span class="form-label">Pression atmosphérique</span>
+                    <span class="form-value" id="val-pres">9950 hPa</span>
+                </div>
+                <div class="slider-wrapper">
+                    <input type="range" id="pressure" min="9780" max="10120" step="1" value="9950">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-header">
+                    <span class="form-label">Altitude</span>
+                    <span class="form-value" id="val-alt">200 m</span>
+                </div>
+                <div class="slider-wrapper">
+                    <input type="range" id="altitude" min="0" max="500" step="1" value="200">
+                </div>
+            </div>
+
+            <button id="analyze-btn" class="btn">
+                <div class="spinner"></div>
+                <span class="btn-text">Lancer l'analyse</span>
+            </button>
+        </div>
+
+        <!-- Results -->
+        <div class="card">
+            <h2 class="card-title">Résultat</h2>
+            
+            <div id="result-box" class="result-container state-initial">
+                <div id="result-icon-container">
+                    <!-- Default Initial Icon -->
+                    <svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 id="result-title" class="result-title">En attente</h3>
+                <p id="result-subtitle" class="result-subtitle">Réglez les curseurs et lancez l'analyse</p>
+            </div>
+
+            <table id="summary-table" class="summary-table">
+                <tbody>
+                    <tr>
+                        <th>Humidité du sol</th>
+                        <td id="sum-soil">-</td>
+                    </tr>
+                    <tr>
+                        <th>Température</th>
+                        <td id="sum-temp">-</td>
+                    </tr>
+                    <tr>
+                        <th>Pression atm.</th>
+                        <td id="sum-pres">-</td>
+                    </tr>
+                    <tr>
+                        <th>Altitude</th>
+                        <td id="sum-alt">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="margin-top: 2rem;">
+        <h2 class="card-title">Historique des analyses</h2>
+        <div id="empty-history" class="empty-history">Aucune analyse effectuée</div>
+        <ul id="history-list" class="history-list hidden">
+            <!-- History items will be prepended here -->
+        </ul>
+    </div>
+</div>
+
+<script>
+    // DOM Elements
+    const elements = {
+        soil: document.getElementById('soil_pct'),
+        temp: document.getElementById('temperature'),
+        pres: document.getElementById('pressure'),
+        alt: document.getElementById('altitude'),
+        valSoil: document.getElementById('val-soil'),
+        valTemp: document.getElementById('val-temp'),
+        valPres: document.getElementById('val-pres'),
+        valAlt: document.getElementById('val-alt'),
+        btn: document.getElementById('analyze-btn'),
+        btnText: document.querySelector('.btn-text'),
+        resultBox: document.getElementById('result-box'),
+        resultIconContainer: document.getElementById('result-icon-container'),
+        resultTitle: document.getElementById('result-title'),
+        resultSubtitle: document.getElementById('result-subtitle'),
+        summaryTable: document.getElementById('summary-table'),
+        sumSoil: document.getElementById('sum-soil'),
+        sumTemp: document.getElementById('sum-temp'),
+        sumPres: document.getElementById('sum-pres'),
+        sumAlt: document.getElementById('sum-alt'),
+        historyList: document.getElementById('history-list'),
+        emptyHistory: document.getElementById('empty-history')
+    };
+
+    // Icons
+    const icons = {
+        initial: '<svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+        irrigate: '<svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg>',
+        ok: '<svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+        error: '<svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>'
+    };
+
+    // Formatting functions
+    const formatters = {
+        soil: val => `${val} %`,
+        temp: val => `${val} °C`,
+        pres: val => `${val} hPa`,
+        alt: val => `${val} m`
+    };
+
+    // Update value displays
+    function updateDisplay(id, valStr) {
+        elements[`val${id.charAt(0).toUpperCase() + id.slice(1)}`].textContent = valStr;
+    }
+
+    elements.soil.addEventListener('input', (e) => updateDisplay('soil', formatters.soil(e.target.value)));
+    elements.temp.addEventListener('input', (e) => updateDisplay('temp', formatters.temp(e.target.value)));
+    elements.pres.addEventListener('input', (e) => updateDisplay('pres', formatters.pres(e.target.value)));
+    elements.alt.addEventListener('input', (e) => updateDisplay('alt', formatters.alt(e.target.value)));
+
+    function addHistoryItem(data, resultType, message) {
+        const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second:'2-digit' });
+        const summary = `sol ${data.soil_pct}% · temp ${data.temperature}°C · pres ${data.pressure} · alt ${data.altitude}m`;
+        
+        let dotClass = 'error';
+        let verdict = 'Erreur';
+        
+        if (resultType === 'irrigate') {
+            dotClass = 'irrigate';
+            verdict = 'Arrosage nécessaire';
+        } else if (resultType === 'ok') {
+            dotClass = 'ok';
+            verdict = "Pas d'arrosage";
+        } else if (resultType === 'error') {
+            verdict = 'Erreur serveur';
+        }
+
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.innerHTML = `
+            <div class="history-dot ${dotClass}"></div>
+            <div class="history-content">
+                <div class="history-summary">${summary}</div>
+                <div class="history-verdict">${verdict}</div>
+            </div>
+            <div class="history-time">${time}</div>
+        `;
+
+        elements.historyList.prepend(li);
+        
+        // Remove empty message if present
+        elements.emptyHistory.classList.add('hidden');
+        elements.historyList.classList.remove('hidden');
+
+        // Keep only 6 items
+        if (elements.historyList.children.length > 6) {
+            elements.historyList.removeChild(elements.historyList.lastChild);
+        }
+    }
+
+    function setResult(stateName, title, subtitle, data = null) {
+        // Reset classes
+        elements.resultBox.className = `result-container state-${stateName}`;
+        
+        // Set content
+        elements.resultIconContainer.innerHTML = icons[stateName];
+        elements.resultTitle.textContent = title;
+        elements.resultSubtitle.textContent = subtitle;
+
+        // Table update
+        if (data && stateName !== 'error') {
+            elements.sumSoil.textContent = formatters.soil(data.soil_pct);
+            elements.sumTemp.textContent = formatters.temp(data.temperature);
+            elements.sumPres.textContent = formatters.pres(data.pressure);
+            elements.sumAlt.textContent = formatters.alt(data.altitude);
+            elements.summaryTable.classList.add('visible');
+        } else {
+            elements.summaryTable.classList.remove('visible');
+        }
+    }
+
+    elements.btn.addEventListener('click', async () => {
+        const data = {
+            soil_pct: parseFloat(elements.soil.value),
+            temperature: parseFloat(elements.temp.value),
+            pressure: parseFloat(elements.pres.value),
+            altitude: parseFloat(elements.alt.value)
+        };
+
+        // Loading state
+        elements.btn.disabled = true;
+        elements.btn.classList.add('loading');
+        elements.btnText.textContent = 'Analyse en cours...';
+        setResult('initial', 'Analyse en cours...', 'Veuillez patienter');
+        elements.summaryTable.classList.remove('visible');
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error || `Erreur serveur (${response.status})`;
+                throw new Error(errorMsg);
+            }
+
+            const result = await response.json();
+            
+            if (result.needs_irrigation) {
+                setResult('irrigate', 'Arrosage nécessaire', 'Le sol est trop sec — activez l\'arrosage', data);
+                addHistoryItem(data, 'irrigate');
+            } else {
+                setResult('ok', 'Pas d\'arrosage nécessaire', 'Le sol est suffisamment humide', data);
+                addHistoryItem(data, 'ok');
+            }
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+            const msg = err.message === 'Failed to fetch' ? 'Impossible de contacter le serveur' : err.message;
+            setResult('error', 'Impossible de contacter le serveur', msg, data);
+            addHistoryItem(data, 'error', msg);
+        } finally {
+            elements.btn.disabled = false;
+            elements.btn.classList.remove('loading');
+            elements.btnText.textContent = "Lancer l'analyse";
+        }
+    });
+
+</script>
+</body>
+</html>
