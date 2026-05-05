@@ -12,12 +12,47 @@ interface utilisateur en français.
 
 ---
 
+## Équipe projet
+
+| Rôle | Nom |
+|------|-----|
+| MLOps | Salma Nhira |
+| DataOps | Nouaman Biba |
+| DevOps | Khadija El Boudhiri |
+
+### Responsabilités
+
+**MLOps — Salma Nhira**
+- Entraînement des modèles de machine learning (Régression Logistique, Random Forest, XGBoost)
+- Suivi des expériences avec MLflow
+- Évaluation et sélection du meilleur modèle (F1 = 0.848)
+- Enregistrement du modèle dans le registre MLflow (PlantWaterModel@production)
+- Promotion automatique du meilleur modèle via src/promote_model.py
+
+**DataOps — Nouaman Biba**
+- Collecte et validation des données capteurs
+- Pipeline de prétraitement des données (src/preprocess.py)
+- Versionnement des données avec DVC (data/processed/features_ready.csv)
+- Définition du schéma et des règles de validation (src/schema.py)
+- Tests de qualité des données (26 tests automatisés)
+
+**DevOps — Khadija El Boudhiri**
+- Développement de l'API Flask (api/app.py)
+- Interface utilisateur web en français (api/index.html)
+- Containerisation Docker (Dockerfile.api, docker-compose.yml)
+- Pipeline CI/CD Jenkins (Jenkinsfile — 8 étapes)
+- Configuration du monitoring Prometheus + Grafana
+- Gestion Git, branches et déploiement
+
+---
+
 ## Démarrage rapide (Windows)
 
 ### Option A — Double-clic (le plus simple)
 
 1. Décompressez le ZIP dans un dossier de votre choix
 2. Ouvrez un terminal CMD dans ce dossier et créez l'environnement :
+
 ```cmd
 python -m venv .venv
 .venv\Scripts\activate
@@ -31,6 +66,7 @@ pip install flask-cors
 C'est tout. L'interface s'affiche en français.
 
 ### Option B — Terminal manuel
+
 ```cmd
 python -m venv .venv
 .venv\Scripts\activate
@@ -53,6 +89,37 @@ Puis ouvrez : http://127.0.0.1:5000/ui
 
 ---
 
+## Architecture
+Données capteurs (CSV)
+│
+▼
+[DVC] Versionnement
+│
+▼
+[src/preprocess.py] Nettoyage & validation
+│
+▼
+[src/train_models.py] Entraînement
+Régression Logistique │ Random Forest │ XGBoost
+│
+▼
+[MLflow] Suivi des expériences + Registre modèle
+PlantWaterModel@production
+│
+▼
+[api/app.py] API Flask — port 5000
+│
+▼
+[api/index.html] Interface web en français
+│
+▼
+Utilisateur
+── Monitoring ──────────────────────────
+Prometheus (port 9090) → Grafana (port 3000)
+Alertes : ModelLatencyHigh, APIErrorRate, MLflowDown
+
+---
+
 ## Utilisation de l'interface
 
 1. Réglez les 4 curseurs selon les mesures de votre capteur
@@ -69,23 +136,24 @@ Puis ouvrez : http://127.0.0.1:5000/ui
 Dans un second terminal (avec .venv activé) :
 
 Vérification santé :
-```bash
+```cmd
 curl http://127.0.0.1:5000/health
 ```
 Réponse attendue : `{"status": "ok"}`
 
 Test prédiction :
-```bash
+```cmd
 curl -X POST http://127.0.0.1:5000/predict ^
--H "Content-Type: application/json" ^
--d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"
+  -H "Content-Type: application/json" ^
+  -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"
 ```
 Réponse attendue : `{"needs_irrigation": true}` ou `{"needs_irrigation": false}`
 
 ---
 
 ## Lancer les tests automatisés
-```bash
+
+```cmd
 pip install pytest
 pytest tests/ -v
 ```
@@ -94,7 +162,6 @@ Résultat attendu : **26 passed**
 ---
 
 ## Structure du projet
-```text
 smart-irrigation-system/
 ├── api/
 │   ├── app.py              ← API Flask principale
@@ -127,7 +194,6 @@ smart-irrigation-system/
 ├── pytest.ini
 ├── start.bat               ← Lancement en un double-clic
 └── README.md
-```
 
 ---
 
@@ -159,7 +225,7 @@ Champs acceptés par POST /predict :
 - Suivi des expériences via base SQLite locale (mlflow.db)
 
 Pour réentraîner depuis zéro (optionnel) :
-```bash
+```cmd
 python src/train_models.py
 python src/promote_model.py
 ```
@@ -186,7 +252,8 @@ Credentials Jenkins requis : `DVC_ACCESS_KEY`, `DOCKER_REGISTRY_CREDENTIALS`, `S
 ---
 
 ## Monitoring (optionnel — nécessite Docker Desktop)
-```bash
+
+```cmd
 docker compose up -d
 ```
 
@@ -201,8 +268,8 @@ docker compose up -d
 
 ## Variables d'environnement
 
-Copiez `.env.example` vers `.env` et ajustez si nécessaire :
-```bash
+Copiez `.env.example` vers `.env` :
+```cmd
 copy .env.example .env
 ```
 
@@ -217,4 +284,4 @@ copy .env.example .env
 
 ## Licence
 
-MIT — libre d'utilisation et de modification.
+IASD 2026
