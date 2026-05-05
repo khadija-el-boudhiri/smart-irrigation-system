@@ -22,11 +22,11 @@ def out_of_range_payload():
 
 @pytest.fixture
 def valid_irrigation_df():
-    """Create a valid DataFrame for testing preprocessing functions."""
+    """Create a valid DataFrame matching the actual schema."""
     return pd.DataFrame({
-        'soil_moisture': [35.2, 40.5, 28.3],
+        'soil_pct': [35.2, 40.5, 28.3],
         'temperature': [28.0, 32.5, 25.0],
         'pressure': [9984.5, 10012.3, 9975.0],
         'altitude': [12.1, 15.0, 10.5],
-        'irrigation_need': [1, 0, 1]
+        'status': [1, 0, 1]  # 1 = needs irrigation, 0 = no irrigation
     })
