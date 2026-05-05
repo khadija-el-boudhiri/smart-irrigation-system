@@ -11,14 +11,21 @@ College MLOps project for predicting if irrigation is needed based on sensor val
 - `src/promote_model.py`: picks best MLflow run and assigns alias (`staging` or `production`).
 - `src/spark_etl.py`: optional Spark batch job (read CSV/glob, validate schema, drop bad rows, write one CSV for training).
 - `api/app.py`: Flask API for prediction.
+- `api/fastapi_app.py`: FastAPI alternative to Flask with Prometheus metrics and health checks.
+- `pipelines/training_pipeline.py`: ZenML pipeline definition with steps (load, train, promote).
+- `steps/`: ZenML step implementations (load_data, train, evaluate, promote).
+- `run_pipeline.py`: entry point for running the ZenML pipeline with MLflow tracker configuration.
 
 ## Who handles what
 
 - DataOps: dataset quality + schema checks (`src/preprocess.py`, optional `src/spark_etl.py`)
 - MLOps: training, evaluation, promotion (`src/train_models.py`, `src/evaluate.py`, `src/promote_model.py`)
-- DevOps: API runtime + deployment (`api/app.py`)
+- DevOps: API runtime + deployment (`api/app.py` for Flask or `api/fastapi_app.py` for FastAPI with metrics)
+- MLOps Orchestration: ZenML pipeline execution (`run_pipeline.py`, `pipelines/`, `steps/`)
 
 ## Run order
+
+### Manual Training + Flask API (no ZenML)
 
 From the project root:
 
@@ -31,7 +38,11 @@ From the project root:
 3. `python src/preprocess.py` (sanity check on whatever `TRAIN_DATA_PATH` points to, default is `features_ready.csv`)
 4. `python src/train_models.py`
 5. `python src/promote_model.py --target production`
-6. `python api/app.py`
+6. `python api/app.py` (Flask API on port 5000)
+
+### ZenML Pipeline + FastAPI (Recommended)
+
+See section "Run with ZenML pipeline" above.
 
 ## Run with ZenML pipeline
 
@@ -43,17 +54,26 @@ From the project root:
    - `python api/fastapi_app.py`
    - or `python -m uvicorn api.fastapi_app:app --host 0.0.0.0 --port 8000`
 
-Test request:
+### Available Endpoints (FastAPI - port 8000)
 
-`curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"`
+- `GET /` - Home/status endpoint
+- `GET /health` - Health check
+- `GET /ui` - UI endpoint (returns `api/index.html` if available, else 503 error)
+- `POST /predict` - Make predictions (requires: soil_pct, temperature, pressure, altitude)
+- `GET /metrics` - Prometheus metrics
+- `GET /docs` - Interactive API documentation (Swagger UI)
 
-FastAPI equivalent (port 8000):
+### Test Prediction Request
 
-`curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"`
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d "{\"soil_pct\":35.2,\"temperature\":28.0,\"pressure\":9984.5,\"altitude\":12.1}"
+```
 
-FastAPI interactive docs:
+### Interactive API Documentation
 
-`http://127.0.0.1:8000/docs`
+Open in browser: `http://127.0.0.1:8000/docs`
 
 ## Run with Docker Compose
 

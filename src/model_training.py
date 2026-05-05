@@ -57,18 +57,3 @@ def prepare_split_and_unfitted_pipelines(
     X_train, X_test, y_train, y_test = preprocess_data(data, target_column)
     pipelines = build_unfitted_pipelines()
     return X_train, X_test, y_train, y_test, pipelines
-
-
-def prepare_data_and_fit_models(
-    data: pd.DataFrame,
-    target_column: str,
-) -> Tuple[Dict[str, Pipeline], pd.DataFrame, pd.Series]:
-    """
-    Validate + split + build + fit on full train (no CV selection).
-    Prefer prepare_split_* + pick_best_model_by_cv + fit_all for ZenML/manual with CV.
-    """
-    X_train, X_test, y_train, y_test, pipelines = prepare_split_and_unfitted_pipelines(
-        data, target_column
-    )
-    fit_all_pipelines(pipelines, X_train, y_train)
-    return pipelines, X_test, y_test

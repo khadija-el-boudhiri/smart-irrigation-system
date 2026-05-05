@@ -1,7 +1,7 @@
 import os
 import mlflow
 import mlflow.pyfunc
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 try:
     from src.schema import MODEL_FEATURES, REGISTERED_MODEL_NAME
 except ModuleNotFoundError:
@@ -33,6 +33,19 @@ def home():
     return jsonify({"message": "Smart Irrigation API is running"})
 
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
+
+
+@app.route("/ui", methods=["GET"])
+def ui():
+    if os.path.exists("api/index.html"):
+        return send_from_directory("api", "index.html")
+    else:
+        return jsonify({"error": "UI not available yet"}), 503
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(silent=True) or {}
@@ -44,6 +57,22 @@ def predict():
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
 
+    for field in MODEL_FEATURES:
+        if type(data[field]) not in (int, float):
+            return jsonify({"error": "All fields must be numeric"}), 400
+
+    ranges = {
+        "soil_pct": (0, 100),
+        "temperature": (10, 42),
+        "pressure": (9780, 10120),
+        "altitude": (0, 500)
+    }
+    for field in MODEL_FEATURES:
+        if field in ranges:
+            min_val, max_val = ranges[field]
+            if not (min_val <= data[field] <= max_val):
+                return jsonify({"error": f"Field {field} is out of valid range"}), 400
+
     features = [[data[col] for col in MODEL_FEATURES]]
     prediction = model.predict(features)
     return jsonify({"needs_irrigation": bool(prediction[0])})
@@ -53,8 +82,3 @@ load_model()
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-print("fast api coming soon")
