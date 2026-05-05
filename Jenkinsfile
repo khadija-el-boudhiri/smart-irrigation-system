@@ -80,6 +80,8 @@ pipeline {
         )]) {
           sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
           sh 'docker push smart-irrigation/api:${BUILD_NUMBER}'
+          sh 'docker tag smart-irrigation/api:${BUILD_NUMBER} smart-irrigation/api:latest'
+          sh 'docker push smart-irrigation/api:latest'
         }
       }
     }

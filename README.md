@@ -48,6 +48,9 @@ interface utilisateur .
 
 ## Démarrage rapide (Windows)
 
+#### Prérequis (Spark ETL)
+Le traitement des données avec Spark (`src/spark_etl.py`) nécessite **Java 11+** installé et la variable d'environnement **JAVA_HOME** configurée.
+
 ### Option A — Double-clic (le plus simple)
 
 1. Décompressez le ZIP dans un dossier de votre choix

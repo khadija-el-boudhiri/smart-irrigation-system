@@ -26,7 +26,7 @@ echo Installation des dependances (1-2 minutes)...
 pip install -r requirements_api.txt --quiet
 
 set MLFLOW_TRACKING_URI=sqlite:///mlflow.db
-set MLFLOW_MODEL_URI=runs:/05dbc64a0c2e4236bf2e2f8c82f61f04/model
+set MLFLOW_MODEL_URI=models:/PlantWaterModel@production
 
 echo.
 echo Demarrage...

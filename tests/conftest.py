@@ -1,5 +1,12 @@
+import os
+import sys
 import pandas as pd
 import pytest
+
+# Ensure project root and api/ are on the path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../api")))
+
 from api.app import app
 
 @pytest.fixture
