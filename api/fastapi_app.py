@@ -6,7 +6,8 @@ import mlflow
 import mlflow.pyfunc
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
@@ -17,7 +18,12 @@ except ModuleNotFoundError:
     from src.schema import MODEL_FEATURES, REGISTERED_MODEL_NAME
 
 app = FastAPI()
-Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+try:
+    app.mount("/static", StaticFiles(directory="api"), name="static")
+except Exception:
+    pass
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app)
 model = None
 
 
@@ -46,6 +52,19 @@ def home():
     return {"message": "Smart Irrigation FastAPI is running"}
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/ui")
+def ui():
+    if os.path.exists("api/index.html"):
+        return FileResponse("api/index.html")
+    else:
+        return JSONResponse(status_code=503, content={"message": "UI not available yet"})
+
+
 @app.post("/predict")
 def predict(payload: IrrigationInput):
     if model is None:
@@ -55,6 +74,23 @@ def predict(payload: IrrigationInput):
         )
 
     data = payload.model_dump()
+    
+    # Validate field ranges (must match Flask validation)
+    ranges = {
+        "soil_pct": (0, 100),
+        "temperature": (10, 42),
+        "pressure": (9780, 10120),
+        "altitude": (0, 500)
+    }
+    for field in MODEL_FEATURES:
+        if field in ranges:
+            min_val, max_val = ranges[field]
+            if not (min_val <= data[field] <= max_val):
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": f"Field {field} is out of valid range"},
+                )
+    
     features = [[data[col] for col in MODEL_FEATURES]]
     prediction = model.predict(features)
     return {"needs_irrigation": bool(prediction[0])}
