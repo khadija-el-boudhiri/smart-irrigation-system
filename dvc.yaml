@@ -7,9 +7,10 @@ stages:
       - data/processed/features_ready.csv
 
   etl:
-    cmd: python src/spark_etl.py --input data/processed/features_ready.csv --output data/processed/features_ready.csv
+    cmd: python src/spark_etl.py --input data/raw/ --output data/processed/features_ready.csv
     deps:
       - src/spark_etl.py
       - src/schema.py
+      - data/raw/
     outs:
       - data/processed/features_ready.csv

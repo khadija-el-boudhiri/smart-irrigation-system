@@ -16,16 +16,16 @@ def training_pipeline(
 ):
     """End-to-end training (CV selection) and promotion."""
     data = load_data_step(path=data_path)
-    models, X_test, y_test, _, _ = train_step(
+    models, X_test, y_test, best_model_name_cv, _ = train_step(
         data=data, target_column=target_column
     )
-    best_model_name, metrics = evaluate_step(models=models, X_test=X_test, y_test=y_test)
+    _, holdout_metrics = evaluate_step(models=models, X_test=X_test, y_test=y_test)
     promote_step(
         models=models,
-        best_model_name=best_model_name,
+        best_model_name=best_model_name_cv,
         X_test=X_test,
         y_test=y_test,
-        metrics=metrics,
+        metrics=holdout_metrics,
         registered_model_name=registered_model_name,
     )
 
