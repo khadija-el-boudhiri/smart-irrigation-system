@@ -2,6 +2,7 @@ import os
 import mlflow
 import mlflow.pyfunc
 from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
 try:
     from src.schema import MODEL_FEATURES, REGISTERED_MODEL_NAME
 except ModuleNotFoundError:
@@ -12,6 +13,7 @@ except ModuleNotFoundError:
     from src.schema import MODEL_FEATURES, REGISTERED_MODEL_NAME
 
 app = Flask(__name__)
+CORS(app)
 model = None
 
 
@@ -40,10 +42,8 @@ def health():
 
 @app.route("/ui", methods=["GET"])
 def ui():
-    if os.path.exists("api/index.html"):
-        return send_from_directory("api", "index.html")
-    else:
-        return jsonify({"error": "UI not available yet"}), 503
+    import os
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "index.html")
 
 
 @app.route("/predict", methods=["POST"])
