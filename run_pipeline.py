@@ -11,22 +11,50 @@ def connect_mlflow_tracker() -> None:
     tracker_name = os.getenv("ZENML_TRACKER_NAME", DEFAULT_ZENML_TRACKER_NAME)
     stack_name = os.getenv("ZENML_STACK_NAME", "local_mlflow_stack")
 
-    # Re-registering existing components is safe with check=False.
-    subprocess.run(
-        [
-            "zenml",
-            "experiment-tracker",
-            "register",
-            tracker_name,
-            "--flavor=mlflow",
-            f"--tracking_uri={tracking_uri}",
-        ],
+    # Check if tracker exists
+    tracker_list = subprocess.run(
+        ["zenml", "experiment-tracker", "list", "--output=json"],
+        capture_output=True,
+        text=True,
         check=False,
     )
-    subprocess.run(
-        ["zenml", "stack", "copy", "default", stack_name],
+    if tracker_name not in tracker_list.stdout:
+        subprocess.run(
+            [
+                "zenml",
+                "experiment-tracker",
+                "register",
+                tracker_name,
+                "--flavor=mlflow",
+                f"--tracking_uri={tracking_uri}",
+            ],
+            check=True,
+        )
+    else:
+        subprocess.run(
+            [
+                "zenml",
+                "experiment-tracker",
+                "update",
+                tracker_name,
+                f"--tracking_uri={tracking_uri}",
+            ],
+            check=True,
+        )
+
+    # Check if stack exists
+    stack_list = subprocess.run(
+        ["zenml", "stack", "list", "--output=json"],
+        capture_output=True,
+        text=True,
         check=False,
     )
+    if stack_name not in stack_list.stdout:
+        subprocess.run(
+            ["zenml", "stack", "copy", "default", stack_name],
+            check=True,
+        )
+
     subprocess.run(
         ["zenml", "stack", "update", stack_name, "-e", tracker_name],
         check=True,
